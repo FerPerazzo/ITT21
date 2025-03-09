@@ -1,0 +1,186 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{graphicx} % Required for inserting images.
+\usepackage[margin=25mm]{geometry}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1ex plus 0.5ex minus 0.2ex}
+
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{dsfont}
+\usepackage{hyperref} % Required for inserting clickable links.
+\usepackage{natbib} % Required for APA-style citations.
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+
+\title{ITT 21 Report: Statistical Issues Related to the Design and Analysis of Adaptive Clinical Trials} %TODO: working title
+\author{Fernando Perazzo; Chris J, Corey V, Daniel H, Haiyan Z, Sam W, Tom B}
+
+\begin{document}
+\maketitle
+
+%\emph{The following headings are only suggestive; students may feel free to diverge from the format, as long as the expected elements are sufficiently covered. Consult with senior SAMBa students to inspect their reports.}
+
+
+\section{Introduction}
+
+%{\itshape Your introduction can be long or short, dependent on how the other sections of your report are structured. The introduction can cover:}
+%\begin{itemize}
+%    \item A succinct description of the problem and the general problem area.
+%    \item The (ITT) presented problem and its context.
+%		\item Brief mention of key ideas; main results; main approaches; literature review; etc. can go here to highlight the later text.
+%		\item If desired, highlight or hint at the structure of the remaining report in order to guide the reader.
+%\end{itemize}
+
+%Adaptive designs play an increasingly important role in clinical drug development. Such designs use accumulating data of an ongoing trial to decide how to modify design aspects without undermining the validity and integrity of the trial. Adaptive designs thus allow for a number of possible adaptations at midterm: Early stopping either for futility or success, sample size reassessment, change of population, etc.
+
+%Interim analyses are often conducted in clinical trials because of ethical and economical reasons. On the one hand, clinical trials should not be continued (and decisions postponed) if a clear tendency favoring a particular treatment evolves so that patients in need can benefit quickly from the medical progress. On the other hand, patients should not be treated with a new therapy (for which in such situations only limited knowledge about the risks is available) if the ongoing trial gives no indication for a potential benefit. Moreover, clinical trial designs that allow for early decisions during the conduct of an ongoing study may reduce the overall costs and timelines of the development program for the new therapy. Repeatedly looking at the data with the possibility for interim decision making, however, may inflate the overall type I error rate since the primary null hypotheses of interest are tested anew at each interim analysis. Special analysis methods are therefore required to maintain the validity of a clinical trial, if confirmatory conclusions at the final analysis are required, such as in late phase II or phase III trials. standard design aspects, like the number of interim analyses, the group sample sizes and the decision boundaries, have to be specified in the planning phase and cannot be changed during the ongoing trial.%Lifted from Adaptive designs for confirmatory clinical Trials
+%efficacy and futility boundaries can efficiently be computed for a multi-arm multi-stage trial with a normally distributed endpoint. % ass002
+
+%On top of accurate estimation, uncertainty quantification is critical to inform risk-benefit and reinbursement discussions for example. Methodology for adjusted point estimates and CI exists, but they are not commonly reported in practice (probably due to novelty / not being widely spread or understood). FDA has also recently asking for limited bias, variance and accurate measure of uncertainty.
+
+Adaptive clinical trial designs allow for prospectively planned modifications to some aspects of the study based on accumulating data in the trial, while also ensuring the validity and integrity of the trial. Adaptations may include early stopping due to futility or success, sample size reassessment, or changes in the target population, among others. However, this flexibility introduces statistical challenges, particularly concerning multiplicity, bias, and proper uncertainty quantification.
+
+Interim analyses are frequently conducted in clinical trials for ethical and economic reasons. Ethically, a trial should not continue if clear evidence emerges that one treatment is superior; patients should benefit from medical advancements sooner. Conversely, if there is no indication of potential gain, exposing patients to an experimental treatment with unknown risks is to be avoided. From an economic perspective, designs that enable early decision-making can help reduce both the costs and timelines associated with drug development. For these reasons, adaptive designs are becoming increasingly important in clinical drug development. 
+
+However, repeatedly analyzing data can increase the overall type I error rate, as the primary null hypotheses are tested multiple times throughout the trial. To ensure the validity of confirmatory conclusions, particularly in late-phase II or phase III trials, ad-hoc statistical methods must be applied. Key design elements, such as the number of interim analyses, group sample sizes, and decision boundaries, are pre-specified during the planning phase and cannot be modified once the trial is underway.
+
+Several challenges associated with adaptive designs were highlighted. Beyond accurate estimation, uncertainty quantification is essential for informing risk-benefit assessments and reimbursement discussions. While statistical methods exist to adjust point estimates and confidence intervals in adaptive trials, they are not widely reported in practice, likely due to their novelty or limited understanding. Additionally, regulatory agencies such as the FDA have recently emphasized the importance of controlling bias and variance while ensuring precise uncertainty measurement. %Info from Novartis
+
+\section{Problem formulation and background}
+
+%{\itshape The next items to introduce are the background and problem formulation (sometimes in the reversed order). You should aspire to clearly describe the problem in a mathematical/physical sense. Clearly identify constraints, solutions to be considered, etc. In some cases, the problem formulation can be very mathematical; in others, it might require much more contextual setup. 
+
+%This section can also cover relevant literature and known past work (and descriptions of the state-of-the-art).}
+
+\subsection{Group Sequential Trial Design}
+A Group Sequential Test (GST) is a method where data is analysed at multiple interim points to allow for early stopping before the final analysis. If results show strong evidence of efficacy, the trial can stop early to bring the treatment to the next stage of development sooner. If results suggest futility, the trial can be stopped to avoid wasting resources and exposing participants to ineffective treatments. 
+
+Instead of conducting a single hypothesis test at the end of the trial, GSTs divide the analysis into pre-specified interim looks at the data. At each interim analysis, a test statistic is computed. Decision rules (also called stopping boundaries) determine whether to stop or continue the trial. If no stopping condition is met, the trial continues, with new patients being randomly assigned to treatment groups, and their measurements added to the existing dataset. If the trial reaches the final stage, a standard test is conducted. The stopping boundaries are adjusted to control the overall type I error rate. %Maybe add a reference
+
+The treatment effect is modeled as a random variable, with responses following normal distributions $X_A\sim N(\mu_A, \sigma^2)$ for the new treatment, and $ X_C\sim N(\mu_C, \sigma^2)$ for control. They each share unknown variance $\sigma^2$. For simplicity, e assume equal sample sizes across both arms, denoted with $n$. Our objective is to test whether the new treatment is superior to the control, where the treatment effect is defined as $\theta = \mu_A - \mu_C$. Thus we consider
+$$H_0: \theta \leq 0 \quad \text{vs} \quad H_A:\theta > 0.$$  
+We use the test statistic $t = \frac{\bar{x}_A - \bar{x}_C}{\sqrt{(s_A^2 + s_C^2)/n}}$, where $s_i^2$ is the sample variance for $i=A,C$. It is a classic result that $t\sim t_{n-1}$ under $H_0$. 
+
+The toy example provided had the following design:
+\begin{itemize}
+	\item \textbf{IA1}: Enroll 112 patients per treatment arm
+	\begin{itemize}
+		\item Stop to reject $H_0$ if p-value $<0.011$
+	\end{itemize}
+	\item \textbf{IA2}: Enroll another 112 patients per treatment arm (pool data)
+	\begin{itemize}
+		\item Stop to reject $H_0$ if p-value $<0.011$
+	\end{itemize}
+	\item \textbf{FA}: Enroll an additional 112 patients per treatment arm (pool data)
+	\begin{itemize}
+		\item Reject $H_0$ if p-value $<0.011$
+	\end{itemize}
+\end{itemize}
+This scheme gives us power $1-\beta = 0.9$ to reject $H_0$ when $\theta = 0.5, \sigma^2=2$ with type I error $\alpha = 0.025$.
+
+\subsection{Multi-Arm Multi-Stage Trial Design}
+	
+Let $\mu_1, \dots, \mu_k$ be the mean responses on $K$ experimental treatments and $\mu_C$ be the mean response on the control. The null hypotheses of interest are 
+$$H_1: \mu_1 \leq \mu_C, \dots, H_K: \mu_K \leq \mu_C,$$
+and we require that the probability of one or more false rejections be no greater than $\alpha$. This is known as the familywise error rate. We assume that the response of each patient is normally distributed with known variance, $\sigma^2$. %and independent 
+	
+As data accumulate over the course of the trial, the null hypotheses are tested at each of a series of analyses, indexed by $j = 1, \dots, J$. At analysis $j$, to test $H_k$, it is assumed that responses, $X_{q,i}$, from patients $i = 1, \dots, n_{q,j}$ on treatments $q = k, C$ are available. Test statistics $Z_{k,j}$ are used. %The notation $r_{q,j}$ for the ratios of sample sizes is convenient, as it will be shown that specification of appropriate stopping boundaries does not depend on the absolute sample sizes. Test statistics $Z_{k,j}$ are used. % = (\hat{\mu}_{k,j} - \hat{\mu}_{0,j}) I_{k,j}^{1/2}$ are used, where $	I_{k,j} = r_{k,j} r_{0,j} n \{ \sigma^2 (r_{k,j} + r_{0,j}) \}^{-1} $ and $\hat{\mu}_{q,j} = (r_{q,j} n)^{-1} \sum_{i=1}^{r_{q,j}n} X_{q,i} \quad (q = 0, k)$.
+	
+Upper and lower stopping boundaries, $U = (u_1, \dots, u_J)$ and $L = (l_1, \dots, l_J)$ are defined as follows. If $Z_{k,j} > u_j$, then $H_k$ is rejected and the whole study is stopped with the conclusion that the $k$-th experimental treatment is superior to control. If $Z_{k,j} < l_j$, treatment $k$ is dropped from all subsequent stages. Otherwise, treatment $k$ continues into stage $j+1$. Note that at final analysis we must make a decision, and thus $u_J = l_J$.  %This is equivalent to $Z_{k,l} = -\infty$ ($l = j + 1, \dots, J$). 
+	
+%For any choice of $\mu_k$ and $r_{k,j} n$ ($k = 0, \dots, K; \, j = 1, \dots, J$), the probability of rejecting at least one null hypothesis can be found by integrating the joint density of the test statistics, which is assumed to be multivariate normal with known correlation matrix, over some rejection region of $K \times J$-dimensional space.  % Lifted fro  ass002
+
+\subsection{Main Issues}
+
+One key concern in adaptive designs is multiplicity, which arises when multiple interim analyses or adaptations are performed within a trial. Each additional look at the data increases the risk of type I error inflation, meaning that the probability of falsely rejecting the null hypothesis becomes higher than the nominal significance level. Proper statistical adjustments, such as alpha-spending functions or combination tests, are required to maintain overall error control.
+
+The standard (naïve) maximum likelihood estimator (MLE) can be biased because it does not account for the adaptive nature of the design. For example, in group sequential trials, stopping early for efficacy leads to an overestimation of the treatment effect. Similarly, in treatment selection designs, selecting the best-performing arm inflates the observed effect size.
+
+Naïve confidence intervals (CIs) suffer from a similar issue. If standard CIs are reported without adjustment, they may be too narrow, underestimating uncertainty and misleading decision-makers about the true effect size.
+
+%They mention unconditional vs conditional inference.
+
+%TODO Talk about bias correcting as per Chris' book. Also mention there exist different kinds of CI tailored to adaptive designs. They trade-off lenght / width (so precision / over estimate) in favour of reliability (true coverage, even conditional).
+
+%TODO There's mean/median unbiased estimation, that looks similar to what the other group was trying %see  Adaptive designs for confirmatory clinical trials
+
+%If a trial stops early for efficacy, the estimated treatment effect (e.g., from a simple MLE) tends to be overestimated due to selection bias. To correct this, bias-adjusted estimators or Bayesian methods can be used. Similarly, confidence intervals must be adjusted to account for early stopping; otherwise, they may be too narrow and misleading.
+
+
+% \subsection{Mathematical formulation and background}
+
+\section{Methodology, approaches, and preliminary results}
+
+%{\itshape Now clearly describe what was done at the ITT and/or what is envisioned in terms of the methodology for tackling the problem above. In some cases, you will have some results to share, but not always.}
+
+We analised the toy example in detail, and were able to replicate the figures shown on the challenge presentation, and for completeness, we looked into the remaining plots. Our analysis also provided insights into the nature of conditional bias. 
+
+For instance, early stopping effectively means selecting samples that fall on the higher end of the distribution, which introduces bias when the treatment effect $\theta$ is small. However, as $\theta$ increases, the majority of samples naturally lead to early stopping, as expected when the treatment effect becomes more significant. This pattern extends to later interim analyses and the final analysis, where similar selection mechanisms influence the observed bias. 
+
+Also, we conjectured that the highest bias occurs at the value of $\theta $ that maximises $P(T=2)$, as this results in samples being almost evenly distributed across all interim analyses. 
+
+Instead of relying on the naive approach, we propose a more suitable likelihood function for computing the MLE. To illustrate, suppose we collect up to three samples, $X_1, X_2, X_3$ where each represents the difference between two normal variables with known variance. The likelihood is thus given by:
+\begin{alignat*}{2}
+	\ell(\theta; \sigma^2, x) &= f(x_1; \theta , \sigma^2)\mathbb{P}(Z_1 > z_*) \mathds{1}_{\{z_1 > z_*\}}\\
+	& + f(x_1; \theta , \sigma^2)f(x_2; \theta , \sigma^2)\mathbb{P}(Z_2 > z_*, Z_1 \leq z_*) \mathds{1}_{\{z_2 > z_*, \,z_1 \leq z_*\}}\\
+	& + f(x_1; \theta , \sigma^2)f(x_2; \theta , \sigma^2)f(x_3; \theta , \sigma^2)\mathbb{P}(Z_2 \leq z_*, Z_1 \leq z_*)\mathds{1}_{\{z_2 \leq z_*, \,z_1 \leq z_*\}}.
+\end{alignat*}
+Under the GST scheme, $\ell(\theta; \sigma^2, x)$ consists of three cases, depending on the interim at which the trial stops. Notably, this formulation does not involve explicit conditioning, as all decisions are pre-specified. 
+
+Furthermore, we incorporated an indicator function into the expected value calculation in the naive case to account for the conditional information available. While this is not the same as conditional expectation, our analysis suggests that it plays a similar role in adjusting for selection effects. Our preliminary results suggest that the reported estimates were not strictly conditional. As an example, consider
+$$\E(X\mathds{1}_{\{X > x_0\}}) = \int_{x_0}^\infty \frac{x}{\sqrt{2\pi \sigma^2}}e^{-\frac{(x-\mu)^2}{2\sigma^2}}dx \stackrel{\text{?}}{=} \mu +  \frac{1}{\sqrt{2\pi }}e^{-\frac{(x_0-\mu)^2}{2\sigma^2}}.$$
+%In the expected value of $X = X_1 = \hat \theta$
+
+%TODO: put some of the images here
+
+\section{Future work and objectives}
+
+{\itshape In this section you should look ahead and describe how this project could be
+turned into a future research project. Clearly articulate what are the realistic goals envisioned, and describe the approach to address these goals. For instance, you might divide the presentation into objectives and methodology: }
+
+{\bf Objective (O1).} A concise description of the first objective
+
+
+{\bf Methodology.} Describe how you would tackle this particular challenge (O1)
+
+{\bf Objective (O2).} A concise description of the second objective
+
+
+{\bf Methodology.}  Describe how you would tackle objective 2.
+
+{\bf Objective (O3).} Another objective if needed.
+
+Idea about writing the full likelihood. See there's an added term. Computing can be done numerically. However, there's bias and without an explicit formula it seems challenging to be able to correct for it.
+
+From their presentation, they foresee the following directions: Inferential framework agnostic of adaptation-type. Build on literature and identify gaps. focus on: duality between testing and CI, metrics for evaluating estimation / inference, role of simulations when analytical proof is not available (our idea lies here!).
+
+How to trade off precision vs bias. Shoud we prioritise uncondutional or conditional properties when reporting (I believe the answer can be changed to never)
+
+\section{Discussion}
+
+{\itshape Compare the different approaches identified during the week. 
+					Which ones do you think give the best chance to succeed in future work?
+					Which ones need more work and more research to see if they can be turned into viable 
+					research projects?}
+					
+
+{\itshape The discussion is also a chance for you to be more speculative and less rigorous in your presentation. Convey excitement about the prospective research and discuss its impact.}
+
+One criticism on adaptive designs is that in case of performing design modification one has to use non-standard test statistics instead of the common sufficient test statistics.
+
+\section*{References}
+
+{\itshape Ensure a good set of relevant references; ensure good typesetting of references with no typos.}
+
+
+% \bibliographystyle{plain}
+% \setlength{\bibsep}{0pt plus 0.3ex}
+% \bibliography{example}
+
+\end{document}
